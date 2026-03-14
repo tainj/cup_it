@@ -25,15 +25,22 @@ const OTP_COLORS = ['#ff6b35', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6'];
 const DARK_COLORS = ['#60a5fa', '#34d399', '#fbbf24', '#f472b6', '#a78bfa'];
 
 const total = mockCategories.reduce((s, c) => s + c.value, 0);
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    maximumFractionDigits: 0,
+  }).format(value);
 
 const CategoryPieChart: React.FC = () => {
   const { theme } = useTheme();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const colors = theme === 'dark' ? DARK_COLORS : theme === 'otp' ? OTP_COLORS : LIGHT_COLORS;
+  const activeCategory = activeIndex === null ? null : mockCategories[activeIndex];
 
   return (
-    <div className="rounded-2xl p-4 theme-transition" style={{ backgroundColor: 'var(--color-surface)' }}>
+    <div className="chart-shell rounded-2xl p-4 theme-transition">
       <h3 className="font-semibold text-sm mb-1 theme-transition" style={{ color: 'var(--color-text-primary)' }}>
         Категории расходов
       </h3>
@@ -41,45 +48,48 @@ const CategoryPieChart: React.FC = () => {
         Март 2026
       </p>
 
-      <ResponsiveContainer width="100%" height={180}>
-        <PieChart>
-          <Pie
-            data={mockCategories}
-            cx="50%"
-            cy="50%"
-            innerRadius={50}
-            outerRadius={75}
-            dataKey="value"
-            onMouseEnter={(_, index) => setActiveIndex(index)}
-            onMouseLeave={() => setActiveIndex(null)}
-          >
-            {mockCategories.map((_, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={colors[index % colors.length]}
-                opacity={activeIndex === null || activeIndex === index ? 1 : 0.5}
-                stroke="none"
-              />
-            ))}
-          </Pie>
-          <Tooltip
-            formatter={(value) =>
-              new Intl.NumberFormat('ru-RU', {
-                style: 'currency',
-                currency: 'RUB',
-                maximumFractionDigits: 0,
-              }).format(Number(value))
-            }
-            contentStyle={{
-              backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
-              border: 'none',
-              borderRadius: '12px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-              fontSize: 12,
-            }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+      <div className="relative">
+        <ResponsiveContainer width="100%" height={180}>
+          <PieChart>
+            <Pie
+              data={mockCategories}
+              cx="50%"
+              cy="50%"
+              innerRadius={50}
+              outerRadius={75}
+              dataKey="value"
+              paddingAngle={2}
+              onMouseEnter={(_, index) => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(null)}
+            >
+              {mockCategories.map((_, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={colors[index % colors.length]}
+                  opacity={activeIndex === null || activeIndex === index ? 1 : 0.5}
+                  stroke="none"
+                />
+              ))}
+            </Pie>
+            <Tooltip
+              formatter={(value) => formatCurrency(Number(value))}
+              contentStyle={{
+                backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
+                border: 'none',
+                borderRadius: '12px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                fontSize: 12,
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="chart-center-label">
+          <div>
+            <strong>{formatCurrency(activeCategory?.value ?? total)}</strong>
+            <span>{activeCategory?.name ?? 'Всего трат'}</span>
+          </div>
+        </div>
+      </div>
 
       {/* Легенда */}
       <div className="grid grid-cols-2 gap-1.5 mt-2">

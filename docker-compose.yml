@@ -1,5 +1,3 @@
-version: '3.9'
-
 # Docker Compose для запуска всего стека OTP Bank MVP:
 # PostgreSQL → Go Backend → React Frontend
 services:

@@ -74,25 +74,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
       className="product-card flex-shrink-0 w-44 overflow-hidden cursor-pointer select-none theme-transition"
       style={{
         minWidth: '176px',
-        borderRadius: '16px',
+        borderRadius: '18px',
         backgroundColor: 'var(--color-card-bg)',
         border: '1px solid var(--color-border)',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-        transition: 'transform 0.18s ease, box-shadow 0.18s ease',
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = '';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
       }}
     >
       {/* Цветная шапка карточки с иконкой */}
-      <div className={`bg-gradient-to-br ${config.color} p-4 flex items-center justify-between`}>
+      <div className={`product-card-head bg-gradient-to-br ${config.color} p-4 flex items-center justify-between`}>
         <span className="text-2xl">{config.icon}</span>
-        <span className="text-white text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">
+        <span className="text-white text-[11px] font-semibold bg-white/20 px-2.5 py-1 rounded-full">
           {typeLabel}
         </span>
       </div>
@@ -105,25 +95,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
         </h3>
 
         {/* Ключевая выгода — самая важная информация */}
-        <p className="font-bold text-sm mb-3" style={{ color: 'var(--color-accent)' }}>
+        <p className="font-extrabold text-sm mb-3" style={{ color: 'var(--color-accent)' }}>
           {formatBenefit(product)}
         </p>
 
         {/* CTA-кнопки: Оформить + Подробнее */}
         <div className="flex gap-1.5">
           <button
-            className="flex-1 py-1.5 text-white text-xs font-semibold rounded-xl transition-opacity hover:opacity-90 active:scale-95"
-            style={{ backgroundColor: 'var(--color-accent)', borderRadius: '10px' }}
+            className="flex-1 py-1.5 text-xs primary-btn"
+            style={{ borderRadius: '10px', boxShadow: 'none' }}
             onClick={(e) => { e.stopPropagation(); onClick(product); }}
           >
             Оформить
           </button>
           <button
-            className="px-2 py-1.5 text-xs font-medium rounded-xl border transition-opacity hover:opacity-80"
+            className="px-2 py-1.5 text-xs font-semibold secondary-btn transition-opacity hover:opacity-80"
             style={{
-              color: 'var(--color-text-secondary)',
-              borderColor: 'var(--color-border)',
-              backgroundColor: 'var(--color-surface-alt)',
               borderRadius: '10px',
             }}
             aria-label="Подробнее"

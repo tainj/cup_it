@@ -20,9 +20,11 @@ const ThemeSwitcher: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 px-2 py-1 rounded-xl text-xs font-medium transition-all"
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all"
         style={{
-          backgroundColor: 'rgba(255,255,255,0.2)',
+          backgroundColor: 'rgba(255,255,255,0.18)',
+          border: '1px solid rgba(255,255,255,0.26)',
+          backdropFilter: 'blur(10px)',
           color: 'var(--color-accent-text)',
         }}
         aria-label="Сменить тему"
@@ -43,7 +45,11 @@ const ThemeSwitcher: React.FC = () => {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
             className="absolute right-0 top-full mt-2 rounded-2xl shadow-xl z-50 overflow-hidden py-1 min-w-[130px]"
-            style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+            style={{
+              backgroundColor: 'color-mix(in srgb, var(--color-surface) 92%, transparent)',
+              border: '1px solid var(--color-border)',
+              backdropFilter: 'blur(14px)',
+            }}
           >
             {themes.map((t) => (
               <button

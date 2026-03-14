@@ -38,62 +38,85 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onApply }
   return (
     // Затемнённый фон — клик закрывает модалку
     <div
-      className="fixed inset-0 bg-black/50 flex items-end justify-center z-50"
+      className="fixed inset-0 bg-black/45 backdrop-blur-sm flex items-end justify-center z-50"
       onClick={onClose}
     >
       {/* Само модальное окно — клик по нему не закрывает */}
       <div
-        className="bg-white w-full max-w-md rounded-t-3xl p-6 pb-8 animate-fade-in"
+        className="w-full max-w-md rounded-t-3xl p-6 pb-8 animate-fade-in theme-transition"
+        style={{
+          backgroundColor: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-border)',
+          boxShadow: '0 -12px 32px rgba(5, 13, 27, 0.25)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Хэндл для свайпа вниз */}
-        <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
+        <div className="w-10 h-1 rounded-full mx-auto mb-6" style={{ backgroundColor: 'var(--color-border)' }} />
 
         {/* Тип продукта */}
-        <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+        <span className="chip">
           {typeLabel[product.type] || product.type}
         </span>
 
         {/* Название */}
-        <h2 className="text-gray-900 text-xl font-bold mt-3 mb-2 leading-tight">
+        <h2 className="text-xl font-bold mt-3 mb-2 leading-tight theme-transition" style={{ color: 'var(--color-text-primary)' }}>
           {product.name}
         </h2>
 
         {/* Описание */}
-        <p className="text-gray-600 text-sm leading-relaxed mb-6">
+        <p className="text-sm leading-relaxed mb-6 theme-transition" style={{ color: 'var(--color-text-secondary)' }}>
           {product.description}
         </p>
 
         {/* Ключевые параметры */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           {product.interest_rate > 0 && (
-            <div className="bg-green-50 rounded-xl p-3">
-              <div className="text-green-800 font-bold text-lg">
+            <div
+              className="rounded-xl p-3 theme-transition"
+              style={{
+                backgroundColor: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--color-accent) 22%, transparent)',
+              }}
+            >
+              <div className="font-bold text-lg" style={{ color: 'var(--color-accent)' }}>
                 {product.interest_rate}%
               </div>
-              <div className="text-green-600 text-xs">
+              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                 {product.type === 'deposit' ? 'годовых (ставка)' : 'годовых (ставка от)'}
               </div>
             </div>
           )}
           {product.min_amount > 0 && (
-            <div className="bg-blue-50 rounded-xl p-3">
-              <div className="text-blue-800 font-bold text-sm">
+            <div
+              className="rounded-xl p-3 theme-transition"
+              style={{
+                backgroundColor: 'var(--color-surface-alt)',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              <div className="font-bold text-sm" style={{ color: 'var(--color-text-primary)' }}>
                 {formatCurrency(product.min_amount)}
               </div>
-              <div className="text-blue-600 text-xs">минимальная сумма</div>
+              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>минимальная сумма</div>
             </div>
           )}
           {product.interest_rate === 0 && product.min_amount === 0 && (
-            <div className="col-span-2 bg-purple-50 rounded-xl p-3">
-              <div className="text-purple-800 font-bold">Бесплатно</div>
-              <div className="text-purple-600 text-xs">без скрытых комиссий</div>
+            <div
+              className="col-span-2 rounded-xl p-3 theme-transition"
+              style={{
+                backgroundColor: 'var(--color-surface-alt)',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              <div className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Бесплатно</div>
+              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>без скрытых комиссий</div>
             </div>
           )}
         </div>
 
         {/* Дисклеймер */}
-        <p className="text-gray-400 text-xs mb-6">
+        <p className="text-xs mb-6 theme-transition" style={{ color: 'var(--color-text-muted)' }}>
           * Условия носят информационный характер. Финальные условия определяются
           индивидуально после подачи заявки.
         </p>
@@ -101,14 +124,16 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onApply }
         {/* Главная кнопка конверсии */}
         <button
           onClick={() => onApply(product)}
-          className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl text-base hover:bg-blue-700 active:scale-95 transition-all shadow-lg shadow-blue-200"
+          className="w-full py-4 primary-btn text-base"
+          style={{ borderRadius: '16px' }}
         >
           Оформить
         </button>
 
         <button
           onClick={onClose}
-          className="w-full py-3 text-gray-500 text-sm mt-3 hover:text-gray-700"
+          className="w-full py-3 text-sm mt-3 transition-colors"
+          style={{ color: 'var(--color-text-muted)' }}
         >
           Закрыть
         </button>
