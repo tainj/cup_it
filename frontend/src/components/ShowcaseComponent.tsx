@@ -11,6 +11,10 @@ import type { AuthState, Product, ShowcaseResponse } from '../types/types';
 import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
 import Toast from './Toast';
+import ThemeSwitcher from './ThemeSwitcher';
+import IncomeExpenseChart from './charts/IncomeExpenseChart';
+import CategoryPieChart from './charts/CategoryPieChart';
+import SparklineChart from './charts/SparklineChart';
 
 interface ShowcaseComponentProps {
   auth: AuthState;
@@ -25,6 +29,8 @@ const scenarioIcons: Record<string, string> = {
   'piggy-bank': '🐷',
   car: '🚗',
   star: '⭐',
+  education: '🎓',
+  travel: '✈️',
 };
 
 // Плашки сегментов клиентов для блока "Рекомендуем вам"
@@ -46,12 +52,46 @@ const segmentConfig: Record<string, { label: string; color: string; benefit: str
   },
 };
 
+// Компонент заглушки (skeleton) для карточки продукта
+const ProductCardSkeleton: React.FC = () => (
+  <div
+    className="flex-shrink-0 w-44"
+    style={{ minWidth: '176px', borderRadius: '16px', overflow: 'hidden' }}
+  >
+    <div className="skeleton" style={{ height: '72px' }} />
+    <div className="p-3" style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderTop: 'none', borderRadius: '0 0 16px 16px' }}>
+      <div className="skeleton mb-2" style={{ height: '14px', width: '80%' }} />
+      <div className="skeleton mb-3" style={{ height: '14px', width: '55%' }} />
+      <div className="skeleton" style={{ height: '28px' }} />
+    </div>
+  </div>
+);
+
+// Skeleton для секции сценария
+const ScenarioSkeleton: React.FC = () => (
+  <div className="animate-fade-in">
+    <div className="flex items-center gap-2 px-4 mb-3">
+      <div className="skeleton w-8 h-8 rounded-full" />
+      <div>
+        <div className="skeleton mb-1" style={{ height: '14px', width: '120px' }} />
+        <div className="skeleton" style={{ height: '11px', width: '80px' }} />
+      </div>
+    </div>
+    <div className="products-scroll">
+      {[1, 2, 3].map((i) => <ProductCardSkeleton key={i} />)}
+    </div>
+  </div>
+);
+
+type Tab = 'home' | 'analytics';
+
 const ShowcaseComponent: React.FC<ShowcaseComponentProps> = ({ auth, onLogout }) => {
   const [showcase, setShowcase] = useState<ShowcaseResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('home');
 
   const loadShowcase = useCallback(async () => {
     setLoading(true);
@@ -109,25 +149,19 @@ const ShowcaseComponent: React.FC<ShowcaseComponentProps> = ({ auth, onLogout })
   const segment = auth.segment || 'mass';
   const segCfg = segmentConfig[segment] || segmentConfig.mass;
 
-  // ─── Loading state ────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-gray-500 text-sm">Загружаем вашу витрину...</p>
-      </div>
-    );
-  }
-
   // ─── Error state ──────────────────────────────────────────────
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 gap-4">
+      <div
+        className="min-h-screen flex flex-col items-center justify-center px-6 gap-4 theme-transition"
+        style={{ backgroundColor: 'var(--color-bg)' }}
+      >
         <span className="text-5xl">⚠️</span>
-        <p className="text-gray-700 text-center">{error}</p>
+        <p className="text-center" style={{ color: 'var(--color-text-secondary)' }}>{error}</p>
         <button
           onClick={loadShowcase}
-          className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium"
+          className="px-6 py-3 text-white rounded-xl font-medium"
+          style={{ backgroundColor: 'var(--color-accent)' }}
         >
           Попробовать снова
         </button>
@@ -136,21 +170,33 @@ const ShowcaseComponent: React.FC<ShowcaseComponentProps> = ({ auth, onLogout })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div
+      className="min-h-screen pb-20 theme-transition"
+      style={{ backgroundColor: 'var(--color-bg)' }}
+    >
       {/* ── Шапка ───────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-5 pt-12 pb-6">
+      <div
+        className="px-5 pt-12 pb-6 theme-transition"
+        style={{ background: `linear-gradient(135deg, var(--color-header-from), var(--color-header-to))` }}
+      >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-blue-200 text-xs">Добро пожаловать</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>Добро пожаловать</p>
             <h1 className="text-white text-xl font-bold">{auth.userName}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full bg-gradient-to-r ${segCfg.color} text-white`}>
+            {/* Переключатель тем */}
+            <ThemeSwitcher />
+            <span
+              className="text-xs font-medium px-2.5 py-1 rounded-full text-white"
+              style={{ background: 'rgba(255,255,255,0.25)' }}
+            >
               {segCfg.label}
             </span>
             <button
               onClick={handleLogout}
-              className="text-blue-200 hover:text-white transition-colors p-1"
+              className="transition-colors p-1"
+              style={{ color: 'rgba(255,255,255,0.7)' }}
               title="Выйти"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -161,84 +207,159 @@ const ShowcaseComponent: React.FC<ShowcaseComponentProps> = ({ auth, onLogout })
           </div>
         </div>
 
-        {/* Баланс-заглушка для реалистичности */}
-        <div className="bg-white/15 rounded-2xl p-4 backdrop-blur-sm">
-          <p className="text-blue-200 text-xs mb-1">Основной счёт</p>
+        {/* Баланс-заглушка с мини-графиком */}
+        <div className="rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+          <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>Основной счёт</p>
           <p className="text-white text-2xl font-bold">82 450 ₽</p>
-          <p className="text-blue-200 text-xs mt-1">**** 4521 · Обновлено сейчас</p>
+          <p className="text-xs mt-1 mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>**** 4521 · Обновлено сейчас</p>
+          {/* Sparkline баланса */}
+          <SparklineChart />
         </div>
       </div>
 
-      {/* ── Блок "Рекомендуем именно вам" ───────────────────── */}
-      <div className="px-4 mt-4">
-        <div className={`bg-gradient-to-r ${segCfg.color} rounded-2xl p-4 text-white flex items-center gap-3 shadow-sm`}>
-          <span className="text-3xl">🎯</span>
-          <div>
-            <p className="font-semibold text-sm">Рекомендуем именно вам</p>
-            <p className="text-white/80 text-xs mt-0.5">{segCfg.benefit}</p>
+      {/* ── Контент по вкладкам ───────────────────────────── */}
+      {activeTab === 'home' && (
+        <>
+          {/* ── Блок "Рекомендуем именно вам" ───────────────────── */}
+          <div className="px-4 mt-4">
+            <div className={`bg-gradient-to-r ${segCfg.color} rounded-2xl p-4 text-white flex items-center gap-3 shadow-sm`}>
+              <span className="text-3xl">🎯</span>
+              <div>
+                <p className="font-semibold text-sm">Рекомендуем именно вам</p>
+                <p className="text-white/80 text-xs mt-0.5">{segCfg.benefit}</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── Дефолтный баннер (если нет персональных сценариев) ── */}
-      {showcase?.is_default && (
-        <div className="mx-4 mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3 flex items-center gap-2">
-          <span className="text-lg">💡</span>
-          <p className="text-blue-700 text-xs">
-            Показываем популярные продукты. Витрина персонализируется по мере использования.
+          {/* ── Дефолтный баннер ── */}
+          {showcase?.is_default && (
+            <div
+              className="mx-4 mt-3 rounded-xl p-3 flex items-center gap-2 border"
+              style={{
+                backgroundColor: 'var(--color-accent-light)',
+                borderColor: 'var(--color-border)',
+              }}
+            >
+              <span className="text-lg">💡</span>
+              <p className="text-xs" style={{ color: 'var(--color-accent)' }}>
+                Показываем популярные продукты. Витрина персонализируется по мере использования.
+              </p>
+            </div>
+          )}
+
+          {/* ── Сценарии-секции (основная часть витрины) ────────── */}
+          <div className="mt-5 space-y-6">
+            {loading
+              ? [1, 2, 3].map((i) => <ScenarioSkeleton key={i} />)
+              : showcase?.blocks?.map((block, blockIdx) => (
+                  <div
+                    key={block.scenario_id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${blockIdx * 80}ms` }}
+                  >
+                    {/* Заголовок секции */}
+                    <div className="flex items-center justify-between px-4 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{scenarioIcons[block.icon] || '⭐'}</span>
+                        <div>
+                          <h2
+                            className="font-semibold text-base leading-tight theme-transition"
+                            style={{ color: 'var(--color-text-primary)' }}
+                          >
+                            {block.scenario_name}
+                          </h2>
+                          {block.description && (
+                            <p
+                              className="text-xs leading-tight theme-transition"
+                              style={{ color: 'var(--color-text-muted)' }}
+                            >
+                              {block.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        className="text-xs font-medium hover:opacity-70 transition-opacity"
+                        style={{ color: 'var(--color-accent)' }}
+                      >
+                        Все →
+                      </button>
+                    </div>
+
+                    {/* Горизонтальная лента продуктов — вместо скучной сетки иконок */}
+                    <div className="products-scroll">
+                      {block.products?.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          onClick={handleProductClick}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))
+            }
+          </div>
+        </>
+      )}
+
+      {/* ── Вкладка аналитики ─────────────────────────────────── */}
+      {activeTab === 'analytics' && (
+        <div className="px-4 mt-4 space-y-4 animate-fade-in">
+          <h2
+            className="font-bold text-lg theme-transition"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
+            Аналитика расходов
+          </h2>
+          <IncomeExpenseChart />
+          <CategoryPieChart />
+          {/* Подсказка о mock-данных */}
+          <p
+            className="text-xs text-center pb-2 theme-transition"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            * Данные для демонстрации. В продакшне подключается API аналитики.
           </p>
         </div>
       )}
 
-      {/* ── Сценарии-секции (основная часть витрины) ────────── */}
-      <div className="mt-5 space-y-6">
-        {showcase?.blocks?.map((block, blockIdx) => (
-          <div key={block.scenario_id} className="animate-fade-in" style={{ animationDelay: `${blockIdx * 80}ms` }}>
-            {/* Заголовок секции */}
-            <div className="flex items-center justify-between px-4 mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{scenarioIcons[block.icon] || '⭐'}</span>
-                <div>
-                  <h2 className="text-gray-900 font-semibold text-base leading-tight">
-                    {block.scenario_name}
-                  </h2>
-                  {block.description && (
-                    <p className="text-gray-400 text-xs leading-tight">{block.description}</p>
-                  )}
-                </div>
-              </div>
-              <button className="text-blue-600 text-xs font-medium hover:underline">
-                Все →
-              </button>
-            </div>
-
-            {/* Горизонтальная лента продуктов — вместо скучной сетки иконок */}
-            <div className="products-scroll">
-              {block.products?.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onClick={handleProductClick}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* ── Нижняя навигация ─────────────────────────────────── */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-100 flex justify-around py-3 z-40">
+      <nav
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md flex justify-around py-3 z-40 theme-transition"
+        style={{
+          backgroundColor: 'var(--color-nav-bg)',
+          borderTop: '1px solid var(--color-nav-border)',
+        }}
+      >
         {[
-          { icon: '🏠', label: 'Главная', active: true },
-          { icon: '💳', label: 'Продукты', active: false },
-          { icon: '📊', label: 'Аналитика', active: false },
-          { icon: '👤', label: 'Профиль', active: false },
-        ].map((item) => (
-          <button key={item.label} className={`flex flex-col items-center gap-0.5 px-3 ${item.active ? 'text-blue-600' : 'text-gray-400'}`}>
-            <span className="text-xl">{item.icon}</span>
-            <span className="text-xs">{item.label}</span>
-          </button>
-        ))}
+          { id: 'home' as Tab,      icon: '🏠', label: 'Главная',  available: true },
+          { id: 'products' as Tab,  icon: '💳', label: 'Продукты', available: false },
+          { id: 'analytics' as Tab, icon: '📊', label: 'Аналитика', available: true },
+          { id: 'profile' as Tab,   icon: '👤', label: 'Профиль',  available: false },
+        ].map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.label}
+              onClick={() => {
+                if (item.available) {
+                  setActiveTab(item.id as Tab);
+                }
+              }}
+              className="flex flex-col items-center gap-0.5 px-3 transition-colors"
+              style={{
+                color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                opacity: item.available ? 1 : 0.5,
+              }}
+              title={item.available ? undefined : 'Скоро'}
+              aria-disabled={!item.available}
+            >
+              <span className="text-xl">{item.icon}</span>
+              <span className="text-xs">{item.label}</span>
+            </button>
+          );
+        })}
       </nav>
 
       {/* ── Модальное окно продукта ───────────────────────────── */}
