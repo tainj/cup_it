@@ -351,4 +351,8 @@ curl -X POST http://localhost:8080/api/v1/analytics/event \
 
 ---
 
+## 🖥️ Репозиторий
+
+https://github.com/tainj/cup_it
+
 *Сделано с ❤️ для ОТП Банка и сообщества разработчиков*
