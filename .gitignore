@@ -1,0 +1,25 @@
+# Go
+backend/bin/
+backend/server
+*.exe
+
+# Env files (keep examples)
+.env
+frontend/.env
+frontend/.env.local
+
+# Frontend build artifacts
+frontend/dist/
+frontend/dist-ssr/
+
+# Node modules
+frontend/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.DS_Store
+
+# Go workspace
+go.work
+go.work.sum
