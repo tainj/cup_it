@@ -3,8 +3,9 @@
 // В продакшне данные приходят с бэкенда через /api/v1/analytics/...
 import React from 'react';
 import {
-  BarChart,
+  ComposedChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -26,6 +27,13 @@ const mockData = [
 
 const formatK = (value: number) => `${(value / 1000).toFixed(0)}к`;
 
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    maximumFractionDigits: 0,
+  }).format(value);
+
 const IncomeExpenseChart: React.FC = () => {
   const { theme } = useTheme();
 
@@ -33,17 +41,39 @@ const IncomeExpenseChart: React.FC = () => {
   const gridColor = theme === 'dark' ? '#334155' : '#f3f4f6';
   const incomeColor = theme === 'otp' ? '#ff6b35' : '#22c55e';
   const expenseColor = theme === 'dark' ? '#475569' : '#f87171';
+  const netColor = theme === 'otp' ? '#9a3412' : theme === 'dark' ? '#93c5fd' : '#1d4ed8';
+  const chartData = mockData.map((item) => ({
+    ...item,
+    balance: item.income - item.expense,
+  }));
+  const totalIncome = mockData.reduce((sum, item) => sum + item.income, 0);
+  const totalExpense = mockData.reduce((sum, item) => sum + item.expense, 0);
+  const net = totalIncome - totalExpense;
 
   return (
-    <div className="rounded-2xl p-4 theme-transition" style={{ backgroundColor: 'var(--color-surface)' }}>
+    <div className="chart-shell rounded-2xl p-4 theme-transition">
       <h3 className="font-semibold text-sm mb-1 theme-transition" style={{ color: 'var(--color-text-primary)' }}>
         Доходы и расходы
       </h3>
       <p className="text-xs mb-4 theme-transition" style={{ color: 'var(--color-text-muted)' }}>
         Последние 6 месяцев
       </p>
-      <ResponsiveContainer width="100%" height={180}>
-        <BarChart data={mockData} barCategoryGap="30%" barGap={4}>
+      <div className="chart-metrics">
+        <div>
+          <span>Доходы</span>
+          <strong>{formatCurrency(totalIncome)}</strong>
+        </div>
+        <div>
+          <span>Расходы</span>
+          <strong>{formatCurrency(totalExpense)}</strong>
+        </div>
+        <div>
+          <span>Баланс</span>
+          <strong style={{ color: net >= 0 ? incomeColor : expenseColor }}>{formatCurrency(net)}</strong>
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <ComposedChart data={chartData} barCategoryGap="24%" barGap={4}>
           <CartesianGrid vertical={false} stroke={gridColor} />
           <XAxis
             dataKey="month"
@@ -60,11 +90,7 @@ const IncomeExpenseChart: React.FC = () => {
           />
           <Tooltip
             formatter={(value) =>
-              new Intl.NumberFormat('ru-RU', {
-                style: 'currency',
-                currency: 'RUB',
-                maximumFractionDigits: 0,
-              }).format(Number(value))
+              formatCurrency(Number(value))
             }
             contentStyle={{
               backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
@@ -80,13 +106,22 @@ const IncomeExpenseChart: React.FC = () => {
             iconSize={8}
             formatter={(value) => (
               <span style={{ fontSize: 11, color: textColor }}>
-                {value === 'income' ? 'Доходы' : 'Расходы'}
+                {value === 'income' ? 'Доходы' : value === 'expense' ? 'Расходы' : 'Чистый поток'}
               </span>
             )}
           />
           <Bar dataKey="income" name="income" fill={incomeColor} radius={[4, 4, 0, 0]} />
           <Bar dataKey="expense" name="expense" fill={expenseColor} radius={[4, 4, 0, 0]} />
-        </BarChart>
+          <Line
+            type="monotone"
+            dataKey="balance"
+            name="balance"
+            stroke={netColor}
+            strokeWidth={2.5}
+            dot={{ r: 3, fill: netColor }}
+            activeDot={{ r: 5, fill: '#ffffff', stroke: netColor, strokeWidth: 2 }}
+          />
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );
